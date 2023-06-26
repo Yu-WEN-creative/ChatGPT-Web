@@ -1,0 +1,524 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    },
+    "accelerator": "GPU",
+    "gpuClass": "standard"
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/Yu-WEN-creative/ChatGPT-Web/blob/main/Denoiser_Example_ipynb\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 1,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "Zy_t6DRvor5H",
+        "outputId": "f6316988-0b3d-4d49-9f0b-c90a06df03ab"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Looking in indexes: https://pypi.org/simple, https://us-python.pkg.dev/colab-wheels/public/simple/\n",
+            "Collecting denoiser\n",
+            "  Downloading denoiser-0.1.5.tar.gz (49 kB)\n",
+            "\u001b[2K     \u001b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m \u001b[32m49.8/49.8 kB\u001b[0m \u001b[31m5.9 MB/s\u001b[0m eta \u001b[36m0:00:00\u001b[0m\n",
+            "\u001b[?25h  Preparing metadata (setup.py) ... \u001b[?25l\u001b[?25hdone\n",
+            "Collecting julius (from denoiser)\n",
+            "  Downloading julius-0.2.7.tar.gz (59 kB)\n",
+            "\u001b[2K     \u001b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m \u001b[32m59.6/59.6 kB\u001b[0m \u001b[31m7.4 MB/s\u001b[0m eta \u001b[36m0:00:00\u001b[0m\n",
+            "\u001b[?25h  Preparing metadata (setup.py) ... \u001b[?25l\u001b[?25hdone\n",
+            "Collecting hydra_core<1.0 (from denoiser)\n",
+            "  Downloading hydra_core-0.11.3-py3-none-any.whl (72 kB)\n",
+            "\u001b[2K     \u001b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m \u001b[32m72.1/72.1 kB\u001b[0m \u001b[31m9.2 MB/s\u001b[0m eta \u001b[36m0:00:00\u001b[0m\n",
+            "\u001b[?25hCollecting hydra_colorlog<1.0 (from denoiser)\n",
+            "  Downloading hydra_colorlog-0.1.4-py3-none-any.whl (4.0 kB)\n",
+            "Requirement already satisfied: numpy>=1.19 in /usr/local/lib/python3.10/dist-packages (from denoiser) (1.22.4)\n",
+            "Collecting pystoi>=0.3.3 (from denoiser)\n",
+            "  Downloading pystoi-0.3.3.tar.gz (7.0 kB)\n",
+            "  Preparing metadata (setup.py) ... \u001b[?25l\u001b[?25hdone\n",
+            "Requirement already satisfied: six in /usr/local/lib/python3.10/dist-packages (from denoiser) (1.16.0)\n",
+            "Collecting sounddevice>=0.4 (from denoiser)\n",
+            "  Downloading sounddevice-0.4.6-py3-none-any.whl (31 kB)\n",
+            "Requirement already satisfied: torch>=1.5 in /usr/local/lib/python3.10/dist-packages (from denoiser) (2.0.1+cu118)\n",
+            "Requirement already satisfied: torchaudio>=0.5 in /usr/local/lib/python3.10/dist-packages (from denoiser) (2.0.2+cu118)\n",
+            "Collecting colorlog (from hydra_colorlog<1.0->denoiser)\n",
+            "  Downloading colorlog-6.7.0-py2.py3-none-any.whl (11 kB)\n",
+            "Collecting omegaconf<1.5,>=1.4 (from hydra_core<1.0->denoiser)\n",
+            "  Downloading omegaconf-1.4.1-py3-none-any.whl (14 kB)\n",
+            "Requirement already satisfied: scipy in /usr/local/lib/python3.10/dist-packages (from pystoi>=0.3.3->denoiser) (1.10.1)\n",
+            "Requirement already satisfied: CFFI>=1.0 in /usr/local/lib/python3.10/dist-packages (from sounddevice>=0.4->denoiser) (1.15.1)\n",
+            "Requirement already satisfied: filelock in /usr/local/lib/python3.10/dist-packages (from torch>=1.5->denoiser) (3.12.2)\n",
+            "Requirement already satisfied: typing-extensions in /usr/local/lib/python3.10/dist-packages (from torch>=1.5->denoiser) (4.6.3)\n",
+            "Requirement already satisfied: sympy in /usr/local/lib/python3.10/dist-packages (from torch>=1.5->denoiser) (1.11.1)\n",
+            "Requirement already satisfied: networkx in /usr/local/lib/python3.10/dist-packages (from torch>=1.5->denoiser) (3.1)\n",
+            "Requirement already satisfied: jinja2 in /usr/local/lib/python3.10/dist-packages (from torch>=1.5->denoiser) (3.1.2)\n",
+            "Requirement already satisfied: triton==2.0.0 in /usr/local/lib/python3.10/dist-packages (from torch>=1.5->denoiser) (2.0.0)\n",
+            "Requirement already satisfied: cmake in /usr/local/lib/python3.10/dist-packages (from triton==2.0.0->torch>=1.5->denoiser) (3.25.2)\n",
+            "Requirement already satisfied: lit in /usr/local/lib/python3.10/dist-packages (from triton==2.0.0->torch>=1.5->denoiser) (16.0.6)\n",
+            "Requirement already satisfied: pycparser in /usr/local/lib/python3.10/dist-packages (from CFFI>=1.0->sounddevice>=0.4->denoiser) (2.21)\n",
+            "Requirement already satisfied: PyYAML in /usr/local/lib/python3.10/dist-packages (from omegaconf<1.5,>=1.4->hydra_core<1.0->denoiser) (6.0)\n",
+            "Requirement already satisfied: MarkupSafe>=2.0 in /usr/local/lib/python3.10/dist-packages (from jinja2->torch>=1.5->denoiser) (2.1.3)\n",
+            "Requirement already satisfied: mpmath>=0.19 in /usr/local/lib/python3.10/dist-packages (from sympy->torch>=1.5->denoiser) (1.3.0)\n",
+            "Building wheels for collected packages: denoiser, pystoi, julius\n",
+            "  Building wheel for denoiser (setup.py) ... \u001b[?25l\u001b[?25hdone\n",
+            "  Created wheel for denoiser: filename=denoiser-0.1.5-py3-none-any.whl size=43826 sha256=5ee5444637a2be00bd22537e1da8c57a8b449b2c54486a9e21cc59d355028eb0\n",
+            "  Stored in directory: /root/.cache/pip/wheels/f1/57/3f/7ce0ae586d457c598b2cb275a37801ff5a705f656ba7a0215e\n",
+            "  Building wheel for pystoi (setup.py) ... \u001b[?25l\u001b[?25hdone\n",
+            "  Created wheel for pystoi: filename=pystoi-0.3.3-py2.py3-none-any.whl size=7779 sha256=5dc9b19ec3283de8765eff0b3ab85b3c533167d09e7a325d6042d9dec5465348\n",
+            "  Stored in directory: /root/.cache/pip/wheels/3b/ca/9e/5b5d6e5e109322303b50d21918ad2bd7d50a2a0775c11e08e8\n",
+            "  Building wheel for julius (setup.py) ... \u001b[?25l\u001b[?25hdone\n",
+            "  Created wheel for julius: filename=julius-0.2.7-py3-none-any.whl size=21878 sha256=dc6f7abd7b064296f8b069d001edc65b171a5e88fc987dd3a48e8380ad847e47\n",
+            "  Stored in directory: /root/.cache/pip/wheels/b9/b2/05/f883527ffcb7f2ead5438a2c23439aa0c881eaa9a4c80256f4\n",
+            "Successfully built denoiser pystoi julius\n",
+            "Installing collected packages: omegaconf, colorlog, sounddevice, pystoi, hydra_core, hydra_colorlog, julius, denoiser\n",
+            "Successfully installed colorlog-6.7.0 denoiser-0.1.5 hydra_colorlog-0.1.4 hydra_core-0.11.3 julius-0.2.7 omegaconf-1.4.1 pystoi-0.3.3 sounddevice-0.4.6\n"
+          ]
+        }
+      ],
+      "source": [
+        "!pip install -U denoiser"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# New section"
+      ],
+      "metadata": {
+        "id": "TPPmkYt0f-ts"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import os\n",
+        "from google.colab import drive\n",
+        "drive.mount('/content/drive')"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "qzuYwyRgVnR2",
+        "outputId": "342b1a75-7b5f-47aa-dace-6e360031eb4f"
+      },
+      "execution_count": 2,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Mounted at /content/drive\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "#视频在google云盘中的路径\n",
+        "!cp -r /content/drive/MyDrive/in/test.MP4 ./"
+      ],
+      "metadata": {
+        "id": "LA6FDF4XWuiQ"
+      },
+      "execution_count": 4,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "!mkdir out"
+      ],
+      "metadata": {
+        "id": "xGsBbufZXUE_",
+        "outputId": "73efc333-10ae-4603-bcc2-ebdcec31f662",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        }
+      },
+      "execution_count": 9,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "mkdir: cannot create directory ‘out’: File exists\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "!mkdir in"
+      ],
+      "metadata": {
+        "id": "ru9XoBJpLUBL",
+        "outputId": "e1e57b90-35f8-4df7-9f73-8d4c84c412ed",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        }
+      },
+      "execution_count": 10,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "mkdir: cannot create directory ‘in’: File exists\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "#分离音轨 并且转换成模型表现较好的采样率16000\n",
+        "!ffmpeg -i test.MP4 -acodec pcm_s16le -ar 16000 -vn ./in/tmpaud.wav"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "mGL-we83KPdY",
+        "outputId": "e409ab6a-a4e3-4ea4-a13c-455d2609e547"
+      },
+      "execution_count": 16,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "ffmpeg version 4.2.7-0ubuntu0.1 Copyright (c) 2000-2022 the FFmpeg developers\n",
+            "  built with gcc 9 (Ubuntu 9.4.0-1ubuntu1~20.04.1)\n",
+            "  configuration: --prefix=/usr --extra-version=0ubuntu0.1 --toolchain=hardened --libdir=/usr/lib/x86_64-linux-gnu --incdir=/usr/include/x86_64-linux-gnu --arch=amd64 --enable-gpl --disable-stripping --enable-avresample --disable-filter=resample --enable-avisynth --enable-gnutls --enable-ladspa --enable-libaom --enable-libass --enable-libbluray --enable-libbs2b --enable-libcaca --enable-libcdio --enable-libcodec2 --enable-libflite --enable-libfontconfig --enable-libfreetype --enable-libfribidi --enable-libgme --enable-libgsm --enable-libjack --enable-libmp3lame --enable-libmysofa --enable-libopenjpeg --enable-libopenmpt --enable-libopus --enable-libpulse --enable-librsvg --enable-librubberband --enable-libshine --enable-libsnappy --enable-libsoxr --enable-libspeex --enable-libssh --enable-libtheora --enable-libtwolame --enable-libvidstab --enable-libvorbis --enable-libvpx --enable-libwavpack --enable-libwebp --enable-libx265 --enable-libxml2 --enable-libxvid --enable-libzmq --enable-libzvbi --enable-lv2 --enable-omx --enable-openal --enable-opencl --enable-opengl --enable-sdl2 --enable-libdc1394 --enable-libdrm --enable-libiec61883 --enable-nvenc --enable-chromaprint --enable-frei0r --enable-libx264 --enable-shared\n",
+            "  libavutil      56. 31.100 / 56. 31.100\n",
+            "  libavcodec     58. 54.100 / 58. 54.100\n",
+            "  libavformat    58. 29.100 / 58. 29.100\n",
+            "  libavdevice    58.  8.100 / 58.  8.100\n",
+            "  libavfilter     7. 57.100 /  7. 57.100\n",
+            "  libavresample   4.  0.  0 /  4.  0.  0\n",
+            "  libswscale      5.  5.100 /  5.  5.100\n",
+            "  libswresample   3.  5.100 /  3.  5.100\n",
+            "  libpostproc    55.  5.100 / 55.  5.100\n",
+            "\u001b[0;35m[mov,mp4,m4a,3gp,3g2,mj2 @ 0x557b5dd2eec0] \u001b[0m\u001b[0;33mst: 0 edit list: 1 Missing key frame while searching for timestamp: 1000\n",
+            "\u001b[0m\u001b[0;35m[mov,mp4,m4a,3gp,3g2,mj2 @ 0x557b5dd2eec0] \u001b[0m\u001b[0;33mst: 0 edit list 1 Cannot find an index entry before timestamp: 1000.\n",
+            "\u001b[0mInput #0, mov,mp4,m4a,3gp,3g2,mj2, from 'test.MP4':\n",
+            "  Metadata:\n",
+            "    major_brand     : mp42\n",
+            "    minor_version   : 1\n",
+            "    compatible_brands: mp42avc1\n",
+            "    creation_time   : 2023-06-26T19:49:02.000000Z\n",
+            "  Duration: 00:05:04.50, start: 0.000000, bitrate: 19586 kb/s\n",
+            "    Stream #0:0(und): Video: h264 (High) (avc1 / 0x31637661), yuv420p(tv, bt709), 1920x1080 [SAR 1:1 DAR 16:9], 19447 kb/s, 24 fps, 24 tbr, 24k tbn, 48 tbc (default)\n",
+            "    Metadata:\n",
+            "      creation_time   : 2023-06-26T19:49:02.000000Z\n",
+            "    Stream #0:1(und): Audio: aac (LC) (mp4a / 0x6134706D), 48000 Hz, stereo, fltp, 125 kb/s (default)\n",
+            "    Metadata:\n",
+            "      creation_time   : 2023-06-26T19:49:02.000000Z\n",
+            "Stream mapping:\n",
+            "  Stream #0:1 -> #0:0 (aac (native) -> pcm_s16le (native))\n",
+            "Press [q] to stop, [?] for help\n",
+            "Output #0, wav, to './in/tmpaud.wav':\n",
+            "  Metadata:\n",
+            "    major_brand     : mp42\n",
+            "    minor_version   : 1\n",
+            "    compatible_brands: mp42avc1\n",
+            "    ISFT            : Lavf58.29.100\n",
+            "    Stream #0:0(und): Audio: pcm_s16le ([1][0][0][0] / 0x0001), 16000 Hz, stereo, s16, 512 kb/s (default)\n",
+            "    Metadata:\n",
+            "      creation_time   : 2023-06-26T19:49:02.000000Z\n",
+            "      encoder         : Lavc58.54.100 pcm_s16le\n",
+            "size=   19032kB time=00:05:04.51 bitrate= 512.0kbits/s speed= 613x    \n",
+            "video:0kB audio:19032kB subtitle:0kB other streams:0kB global headers:0kB muxing overhead: 0.000400%\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "#音频切片分割成60秒一段的小音频\n",
+        "!ffmpeg -i ./in/tmpaud.wav -f segment -segment_time 60 -c copy ./in/output%03d.wav"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "evJP0CA4LaIW",
+        "outputId": "838d48cf-6257-4e99-c532-f0f11b8e041b"
+      },
+      "execution_count": 17,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "ffmpeg version 4.2.7-0ubuntu0.1 Copyright (c) 2000-2022 the FFmpeg developers\n",
+            "  built with gcc 9 (Ubuntu 9.4.0-1ubuntu1~20.04.1)\n",
+            "  configuration: --prefix=/usr --extra-version=0ubuntu0.1 --toolchain=hardened --libdir=/usr/lib/x86_64-linux-gnu --incdir=/usr/include/x86_64-linux-gnu --arch=amd64 --enable-gpl --disable-stripping --enable-avresample --disable-filter=resample --enable-avisynth --enable-gnutls --enable-ladspa --enable-libaom --enable-libass --enable-libbluray --enable-libbs2b --enable-libcaca --enable-libcdio --enable-libcodec2 --enable-libflite --enable-libfontconfig --enable-libfreetype --enable-libfribidi --enable-libgme --enable-libgsm --enable-libjack --enable-libmp3lame --enable-libmysofa --enable-libopenjpeg --enable-libopenmpt --enable-libopus --enable-libpulse --enable-librsvg --enable-librubberband --enable-libshine --enable-libsnappy --enable-libsoxr --enable-libspeex --enable-libssh --enable-libtheora --enable-libtwolame --enable-libvidstab --enable-libvorbis --enable-libvpx --enable-libwavpack --enable-libwebp --enable-libx265 --enable-libxml2 --enable-libxvid --enable-libzmq --enable-libzvbi --enable-lv2 --enable-omx --enable-openal --enable-opencl --enable-opengl --enable-sdl2 --enable-libdc1394 --enable-libdrm --enable-libiec61883 --enable-nvenc --enable-chromaprint --enable-frei0r --enable-libx264 --enable-shared\n",
+            "  libavutil      56. 31.100 / 56. 31.100\n",
+            "  libavcodec     58. 54.100 / 58. 54.100\n",
+            "  libavformat    58. 29.100 / 58. 29.100\n",
+            "  libavdevice    58.  8.100 / 58.  8.100\n",
+            "  libavfilter     7. 57.100 /  7. 57.100\n",
+            "  libavresample   4.  0.  0 /  4.  0.  0\n",
+            "  libswscale      5.  5.100 /  5.  5.100\n",
+            "  libswresample   3.  5.100 /  3.  5.100\n",
+            "  libpostproc    55.  5.100 / 55.  5.100\n",
+            "\u001b[0;33mGuessed Channel Layout for Input Stream #0.0 : stereo\n",
+            "\u001b[0mInput #0, wav, from './in/tmpaud.wav':\n",
+            "  Metadata:\n",
+            "    encoder         : Lavf58.29.100\n",
+            "  Duration: 00:05:04.51, bitrate: 512 kb/s\n",
+            "    Stream #0:0: Audio: pcm_s16le ([1][0][0][0] / 0x0001), 16000 Hz, stereo, s16, 512 kb/s\n",
+            "\u001b[1;35m[segment @ 0x5619a073ebc0] \u001b[0mOpening './in/output000.wav' for writing\n",
+            "Output #0, segment, to './in/output%03d.wav':\n",
+            "  Metadata:\n",
+            "    encoder         : Lavf58.29.100\n",
+            "    Stream #0:0: Audio: pcm_s16le ([1][0][0][0] / 0x0001), 16000 Hz, stereo, s16, 512 kb/s\n",
+            "Stream mapping:\n",
+            "  Stream #0:0 -> #0:0 (copy)\n",
+            "Press [q] to stop, [?] for help\n",
+            "\u001b[1;35m[segment @ 0x5619a073ebc0] \u001b[0mOpening './in/output001.wav' for writing\n",
+            "\u001b[1;35m[segment @ 0x5619a073ebc0] \u001b[0mOpening './in/output002.wav' for writing\n",
+            "\u001b[1;35m[segment @ 0x5619a073ebc0] \u001b[0mOpening './in/output003.wav' for writing\n",
+            "\u001b[1;35m[segment @ 0x5619a073ebc0] \u001b[0mOpening './in/output004.wav' for writing\n",
+            "\u001b[1;35m[segment @ 0x5619a073ebc0] \u001b[0mOpening './in/output005.wav' for writing\n",
+            "size=N/A time=00:05:04.44 bitrate=N/A speed=4.51e+03x    \n",
+            "video:0kB audio:19032kB subtitle:0kB other streams:0kB global headers:0kB muxing overhead: unknown\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "!rm ./in/tmpaud.wav"
+      ],
+      "metadata": {
+        "id": "zbj2PTPmLvud"
+      },
+      "execution_count": 18,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "#降噪\n",
+        "!python3 -m denoiser.enhance --noisy_dir=in/ --out_dir=out/  --master64 --device cuda"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "KyR7Y-5dXYPW",
+        "outputId": "a2c77e92-01cf-45a6-f95c-a20ff805c718"
+      },
+      "execution_count": 19,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "INFO:denoiser.pretrained:Loading pre-trained real time H=64 model trained on DNS and Valentini.\n",
+            "INFO:__main__:Generate enhanced files | 1/6 | 0.8 it/sec\n",
+            "INFO:__main__:Generate enhanced files | 2/6 | 0.9 it/sec\n",
+            "INFO:__main__:Generate enhanced files | 3/6 | 1.0 it/sec\n",
+            "INFO:__main__:Generate enhanced files | 4/6 | 1.0 it/sec\n",
+            "INFO:__main__:Generate enhanced files | 5/6 | 1.1 it/sec\n",
+            "INFO:__main__:Generate enhanced files | 6/6 | 1.2 it/sec\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "#删除不必要的噪音文件，如果是歌曲 人声分离的话可以保留\n",
+        "! rm ./out/*noisy.wav"
+      ],
+      "metadata": {
+        "id": "WKzJEhl4MfUX"
+      },
+      "execution_count": 20,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "#将路径写入txt\n",
+        "files = os.listdir(\"./out/\")\n",
+        "txt = open(\"input.txt\",\"w\")\n",
+        "txt.truncate(0)\n",
+        "for i in range(len(files)):\n",
+        "  txt.write(\"file\"+\" \"+\"out/output{number}_enhanced.wav\\n\".format(number=str(i).zfill(3)))\n",
+        "txt.close()"
+      ],
+      "metadata": {
+        "id": "ZwHowe7BFgh9"
+      },
+      "execution_count": 21,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "#将切片的音频拼接回来\n",
+        "!ffmpeg -f concat -safe 0 -i input.txt -c copy output.wav"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "DcpXFVPbOAUQ",
+        "outputId": "2f026162-f97b-43aa-adef-018d9d556ceb"
+      },
+      "execution_count": 22,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "ffmpeg version 4.2.7-0ubuntu0.1 Copyright (c) 2000-2022 the FFmpeg developers\n",
+            "  built with gcc 9 (Ubuntu 9.4.0-1ubuntu1~20.04.1)\n",
+            "  configuration: --prefix=/usr --extra-version=0ubuntu0.1 --toolchain=hardened --libdir=/usr/lib/x86_64-linux-gnu --incdir=/usr/include/x86_64-linux-gnu --arch=amd64 --enable-gpl --disable-stripping --enable-avresample --disable-filter=resample --enable-avisynth --enable-gnutls --enable-ladspa --enable-libaom --enable-libass --enable-libbluray --enable-libbs2b --enable-libcaca --enable-libcdio --enable-libcodec2 --enable-libflite --enable-libfontconfig --enable-libfreetype --enable-libfribidi --enable-libgme --enable-libgsm --enable-libjack --enable-libmp3lame --enable-libmysofa --enable-libopenjpeg --enable-libopenmpt --enable-libopus --enable-libpulse --enable-librsvg --enable-librubberband --enable-libshine --enable-libsnappy --enable-libsoxr --enable-libspeex --enable-libssh --enable-libtheora --enable-libtwolame --enable-libvidstab --enable-libvorbis --enable-libvpx --enable-libwavpack --enable-libwebp --enable-libx265 --enable-libxml2 --enable-libxvid --enable-libzmq --enable-libzvbi --enable-lv2 --enable-omx --enable-openal --enable-opencl --enable-opengl --enable-sdl2 --enable-libdc1394 --enable-libdrm --enable-libiec61883 --enable-nvenc --enable-chromaprint --enable-frei0r --enable-libx264 --enable-shared\n",
+            "  libavutil      56. 31.100 / 56. 31.100\n",
+            "  libavcodec     58. 54.100 / 58. 54.100\n",
+            "  libavformat    58. 29.100 / 58. 29.100\n",
+            "  libavdevice    58.  8.100 / 58.  8.100\n",
+            "  libavfilter     7. 57.100 /  7. 57.100\n",
+            "  libavresample   4.  0.  0 /  4.  0.  0\n",
+            "  libswscale      5.  5.100 /  5.  5.100\n",
+            "  libswresample   3.  5.100 /  3.  5.100\n",
+            "  libpostproc    55.  5.100 / 55.  5.100\n",
+            "\u001b[0;33mGuessed Channel Layout for Input Stream #0.0 : mono\n",
+            "\u001b[0mInput #0, concat, from 'input.txt':\n",
+            "  Duration: N/A, start: 0.000000, bitrate: 512 kb/s\n",
+            "    Stream #0:0: Audio: pcm_f32le ([3][0][0][0] / 0x0003), 16000 Hz, mono, flt, 512 kb/s\n",
+            "Output #0, wav, to 'output.wav':\n",
+            "  Metadata:\n",
+            "    ISFT            : Lavf58.29.100\n",
+            "    Stream #0:0: Audio: pcm_f32le ([3][0][0][0] / 0x0003), 16000 Hz, mono, flt, 512 kb/s\n",
+            "Stream mapping:\n",
+            "  Stream #0:0 -> #0:0 (copy)\n",
+            "Press [q] to stop, [?] for help\n",
+            "size=   19032kB time=00:05:04.44 bitrate= 512.1kbits/s speed=7.3e+03x    \n",
+            "video:0kB audio:19032kB subtitle:0kB other streams:0kB global headers:0kB muxing overhead: 0.000585%\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "#将音轨添加回视频\n",
+        "!ffmpeg -i test.MP4 -i output.wav -map 0:v -map 1:a -c:v copy -c:a aac -b:a 256k -shortest out/output.mp4"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "Mc1VGg9vORb1",
+        "outputId": "2c8c79c2-7cb5-4574-eb7a-415bcdb01103"
+      },
+      "execution_count": 24,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "ffmpeg version 4.2.7-0ubuntu0.1 Copyright (c) 2000-2022 the FFmpeg developers\n",
+            "  built with gcc 9 (Ubuntu 9.4.0-1ubuntu1~20.04.1)\n",
+            "  configuration: --prefix=/usr --extra-version=0ubuntu0.1 --toolchain=hardened --libdir=/usr/lib/x86_64-linux-gnu --incdir=/usr/include/x86_64-linux-gnu --arch=amd64 --enable-gpl --disable-stripping --enable-avresample --disable-filter=resample --enable-avisynth --enable-gnutls --enable-ladspa --enable-libaom --enable-libass --enable-libbluray --enable-libbs2b --enable-libcaca --enable-libcdio --enable-libcodec2 --enable-libflite --enable-libfontconfig --enable-libfreetype --enable-libfribidi --enable-libgme --enable-libgsm --enable-libjack --enable-libmp3lame --enable-libmysofa --enable-libopenjpeg --enable-libopenmpt --enable-libopus --enable-libpulse --enable-librsvg --enable-librubberband --enable-libshine --enable-libsnappy --enable-libsoxr --enable-libspeex --enable-libssh --enable-libtheora --enable-libtwolame --enable-libvidstab --enable-libvorbis --enable-libvpx --enable-libwavpack --enable-libwebp --enable-libx265 --enable-libxml2 --enable-libxvid --enable-libzmq --enable-libzvbi --enable-lv2 --enable-omx --enable-openal --enable-opencl --enable-opengl --enable-sdl2 --enable-libdc1394 --enable-libdrm --enable-libiec61883 --enable-nvenc --enable-chromaprint --enable-frei0r --enable-libx264 --enable-shared\n",
+            "  libavutil      56. 31.100 / 56. 31.100\n",
+            "  libavcodec     58. 54.100 / 58. 54.100\n",
+            "  libavformat    58. 29.100 / 58. 29.100\n",
+            "  libavdevice    58.  8.100 / 58.  8.100\n",
+            "  libavfilter     7. 57.100 /  7. 57.100\n",
+            "  libavresample   4.  0.  0 /  4.  0.  0\n",
+            "  libswscale      5.  5.100 /  5.  5.100\n",
+            "  libswresample   3.  5.100 /  3.  5.100\n",
+            "  libpostproc    55.  5.100 / 55.  5.100\n",
+            "\u001b[0;35m[mov,mp4,m4a,3gp,3g2,mj2 @ 0x561f92fc3040] \u001b[0m\u001b[0;33mst: 0 edit list: 1 Missing key frame while searching for timestamp: 1000\n",
+            "\u001b[0m\u001b[0;35m[mov,mp4,m4a,3gp,3g2,mj2 @ 0x561f92fc3040] \u001b[0m\u001b[0;33mst: 0 edit list 1 Cannot find an index entry before timestamp: 1000.\n",
+            "\u001b[0mInput #0, mov,mp4,m4a,3gp,3g2,mj2, from 'test.MP4':\n",
+            "  Metadata:\n",
+            "    major_brand     : mp42\n",
+            "    minor_version   : 1\n",
+            "    compatible_brands: mp42avc1\n",
+            "    creation_time   : 2023-06-26T19:49:02.000000Z\n",
+            "  Duration: 00:05:04.50, start: 0.000000, bitrate: 19586 kb/s\n",
+            "    Stream #0:0(und): Video: h264 (High) (avc1 / 0x31637661), yuv420p(tv, bt709), 1920x1080 [SAR 1:1 DAR 16:9], 19447 kb/s, 24 fps, 24 tbr, 24k tbn, 48 tbc (default)\n",
+            "    Metadata:\n",
+            "      creation_time   : 2023-06-26T19:49:02.000000Z\n",
+            "    Stream #0:1(und): Audio: aac (LC) (mp4a / 0x6134706D), 48000 Hz, stereo, fltp, 125 kb/s (default)\n",
+            "    Metadata:\n",
+            "      creation_time   : 2023-06-26T19:49:02.000000Z\n",
+            "Input #1, wav, from 'output.wav':\n",
+            "  Metadata:\n",
+            "    encoder         : Lavf58.29.100\n",
+            "  Duration: 00:05:04.51, bitrate: 512 kb/s\n",
+            "    Stream #1:0: Audio: pcm_f32le ([3][0][0][0] / 0x0003), 16000 Hz, mono, flt, 512 kb/s\n",
+            "Stream mapping:\n",
+            "  Stream #0:0 -> #0:0 (copy)\n",
+            "  Stream #1:0 -> #0:1 (pcm_f32le (native) -> aac (native))\n",
+            "Press [q] to stop, [?] for help\n",
+            "\u001b[1;36m[aac @ 0x561f930f21c0] \u001b[0m\u001b[0;33mToo many bits 16384.000000 > 6144 per frame requested, clamping to max\n",
+            "\u001b[0mOutput #0, mp4, to 'out/output.mp4':\n",
+            "  Metadata:\n",
+            "    major_brand     : mp42\n",
+            "    minor_version   : 1\n",
+            "    compatible_brands: mp42avc1\n",
+            "    encoder         : Lavf58.29.100\n",
+            "    Stream #0:0(und): Video: h264 (High) (avc1 / 0x31637661), yuv420p(tv, bt709), 1920x1080 [SAR 1:1 DAR 16:9], q=2-31, 19447 kb/s, 24 fps, 24 tbr, 24k tbn, 24k tbc (default)\n",
+            "    Metadata:\n",
+            "      creation_time   : 2023-06-26T19:49:02.000000Z\n",
+            "    Stream #0:1: Audio: aac (LC) (mp4a / 0x6134706D), 16000 Hz, mono, fltp, 96 kb/s\n",
+            "    Metadata:\n",
+            "      encoder         : Lavc58.54.100 aac\n",
+            "frame= 7308 fps=1341 q=-1.0 Lsize=  725533kB time=00:05:04.41 bitrate=19524.4kbits/s speed=55.9x    \n",
+            "video:722868kB audio:2486kB subtitle:0kB other streams:0kB global headers:0kB muxing overhead: 0.024574%\n",
+            "\u001b[1;36m[aac @ 0x561f930f21c0] \u001b[0mQavg: 65535.973\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "!cp out/output.mp4 /content/drive/MyDrive/in"
+      ],
+      "metadata": {
+        "id": "e03pjAPKe07D"
+      },
+      "execution_count": 26,
+      "outputs": []
+    }
+  ]
+}
